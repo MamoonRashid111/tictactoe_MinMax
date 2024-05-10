@@ -105,3 +105,137 @@ def getScore(brd):
 
     else:
         return 0
+
+
+def MiniMaxAB(brd, depth, alpha, beta, player):
+    row = -1
+    col = -1
+    if depth == 0 or gameWon(brd):
+        return [row, col, getScore(brd)]
+
+    else:
+        for cell in emptyCells(brd):
+            setMove(brd, cell[0], cell[1], player)
+            score = MiniMaxAB(brd, depth - 1, alpha, beta, -player)
+            if player == XPLAYER:
+                # X is always the max player
+                if score[2] > alpha:
+                    alpha = score[2]
+                    row = cell[0]
+                    col = cell[1]
+
+            else:
+                if score[2] < beta:
+                    beta = score[2]
+                    row = cell[0]
+                    col = cell[1]
+
+            setMove(brd, cell[0], cell[1], EMPTY)
+
+            if alpha >= beta:
+                break
+
+        if player == XPLAYER:
+            return [row, col, alpha]
+
+        else:
+            return [row, col, beta]
+
+
+def AIMove(brd):
+    if len(emptyCells(brd)) == 9:
+        x = choice([0, 1, 2])
+        y = choice([0, 1, 2])
+        setMove(brd, x, y, OPLAYER)
+        printBoard(brd)
+
+    else:
+        result = MiniMaxAB(brd, len(emptyCells(brd)), -inf, inf, OPLAYER)
+        setMove(brd, result[0], result[1], OPLAYER)
+        printBoard(brd)
+
+
+def AI2Move(brd):
+    if len(emptyCells(brd)) == 9:
+        x = choice([0, 1, 2])
+        y = choice([0, 1, 2])
+        setMove(brd, x, y, XPLAYER)
+        printBoard(brd)
+
+    else:
+        result = MiniMaxAB(brd, len(emptyCells(brd)), -inf, inf, XPLAYER)
+        setMove(brd, result[0], result[1], XPLAYER)
+        printBoard(brd)
+
+
+def AIvsAI():
+    currentPlayer = XPLAYER
+    count = 0
+    for x in range(1000):
+        clearBoard(board)
+
+        while not (boardFull(board) or gameWon(board)):
+            makeMove(board, currentPlayer, 2)
+            currentPlayer *= -1
+
+        printResult(board)
+        if gameWon(board):
+            count += 1
+
+    print('Number of AI vs AI wins =', count)
+
+
+def makeMove(brd, player, mode):
+    if mode == 1:
+        if player == XPLAYER:
+            playerMove(brd)
+
+        else:
+            AIMove(brd)
+    else:
+        if player == XPLAYER:
+            AIMove(brd)
+        else:
+            AI2Move(brd)
+
+
+def playerVSai():
+    while True:
+        try:
+            order = int(input('Would you like to go first or second? (1/2)? '))
+            if not (order == 1 or order == 2):
+                print('Please pick 1 or 2')
+            else:
+                break
+        except(KeyError, ValueError):
+            print('Enter a number')
+
+    clearBoard(board)
+    if order == 2:
+        currentPlayer = OPLAYER
+    else:
+        currentPlayer = XPLAYER
+
+    while not (boardFull(board) or gameWon(board)):
+        makeMove(board, currentPlayer, 1)
+        currentPlayer *= -1
+
+    printResult(board)
+
+
+def main():
+    while True:
+        user = input('Play?(Y/N) ')
+        if user.lower() == 'y':
+            t = input('AI vs AI or Player vs AI(1/2)')
+            if int(t) == 1:
+                AIvsAI()
+            else:
+                playerVSai()
+        else:
+            print('Bye!')
+            exit()
+
+
+if __name__ == '__main__':
+    main()
